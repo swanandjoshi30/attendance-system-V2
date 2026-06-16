@@ -1,9 +1,14 @@
-# attendance_config.py
+"""Prototype configuration for the attendance system."""
+
+import os
+
+
 DB_CONFIG = {
-    'host': 'localhost',
-    'database': 'attendance2',
-    'user': 'postgres',
-    'password': 'Pass@123'
+    'host': os.getenv('ATTENDANCE_DB_HOST', 'localhost'),
+    'database': os.getenv('ATTENDANCE_DB_NAME', 'attendance2'),
+    'user': os.getenv('ATTENDANCE_DB_USER', 'postgres'),
+    'password': os.getenv('ATTENDANCE_DB_PASSWORD', 'Pass@123'),
+    'port': int(os.getenv('ATTENDANCE_DB_PORT', '5432')),
 }
 
 FACE_RECOGNITION_CONFIG = {

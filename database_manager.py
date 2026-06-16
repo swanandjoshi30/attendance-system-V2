@@ -6,24 +6,43 @@ Handles all database operations with connection pooling
 import psycopg2
 from psycopg2 import pool
 from contextlib import contextmanager
+from pathlib import Path
 import json
 import numpy as np
 
 class DatabaseManager:
     def __init__(self, config):
         self.config = config
+        self.schema_path = Path(__file__).with_name('tables')
         try:
             self.connection_pool = psycopg2.pool.SimpleConnectionPool(
                 1, 10,  # min and max connections
                 host=config['host'],
                 database=config['database'],
                 user=config['user'],
-                password=config['password']
+                password=config['password'],
+                port=config.get('port', 5432)
             )
             print("✓ Database connection pool created successfully")
+            self.initialize_schema()
         except Exception as e:
             print(f"✗ Failed to create connection pool: {e}")
             raise
+
+    def initialize_schema(self):
+        """Create the prototype schema and seed data when needed."""
+        if not self.schema_path.exists():
+            print(f"⚠ Schema file not found: {self.schema_path}")
+            return
+
+        schema_sql = self.schema_path.read_text(encoding='utf-8')
+
+        with self.get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(schema_sql)
+            conn.commit()
+
+        print("✓ Prototype database schema verified")
 
     @contextmanager
     def get_connection(self):
@@ -31,6 +50,10 @@ class DatabaseManager:
         conn = self.connection_pool.getconn()
         try:
             yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         finally:
             self.connection_pool.putconn(conn)
 

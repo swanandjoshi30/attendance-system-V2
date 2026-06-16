@@ -1,12 +1,12 @@
 -- Classes table
-CREATE TABLE Classes (
+CREATE TABLE IF NOT EXISTS Classes (
     class_id SERIAL PRIMARY KEY,
     class_name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Subjects table
-CREATE TABLE Subjects (
+CREATE TABLE IF NOT EXISTS Subjects (
     subject_id SERIAL PRIMARY KEY,
     subject_name VARCHAR(100) UNIQUE NOT NULL,
     subject_code VARCHAR(20) UNIQUE,
@@ -14,7 +14,7 @@ CREATE TABLE Subjects (
 );
 
 -- Students table
-CREATE TABLE Students (
+CREATE TABLE IF NOT EXISTS Students (
     prn_no VARCHAR(20) PRIMARY KEY,
     class_id INTEGER REFERENCES Classes(class_id),
     roll_no INTEGER NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE Students (
 );
 
 -- FaceEncodings table
-CREATE TABLE FaceEncodings (
+CREATE TABLE IF NOT EXISTS FaceEncodings (
     encoding_id SERIAL PRIMARY KEY,
     prn_no VARCHAR(20) REFERENCES Students(prn_no) ON DELETE CASCADE,
     encoding_data JSONB NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE FaceEncodings (
 );
 
 -- AttendanceLog table
-CREATE TABLE AttendanceLog (
+CREATE TABLE IF NOT EXISTS AttendanceLog (
     log_id SERIAL PRIMARY KEY,
     prn_no VARCHAR(20) REFERENCES Students(prn_no),
     subject_id INTEGER REFERENCES Subjects(subject_id),
@@ -44,8 +44,10 @@ CREATE TABLE AttendanceLog (
 -- Insert sample data
 INSERT INTO Classes (class_name) VALUES 
     ('Computer Science - Year 1'),
-    ('Computer Science - Year 2');
+    ('Computer Science - Year 2')
+ON CONFLICT (class_name) DO NOTHING;
 
 INSERT INTO Subjects (subject_name, subject_code) VALUES 
     ('Data Structures', 'CS201'),
-    ('Database Management', 'CS202');
+    ('Database Management', 'CS202')
+ON CONFLICT (subject_name) DO NOTHING;
